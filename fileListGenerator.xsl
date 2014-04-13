@@ -10,7 +10,8 @@
     -->
 
     <!--
-        fileListGenerator.xsl outputs an XML list of files in a directory.                
+        fileListGenerator.xsl outputs an XML list of files in a directory. 
+        Place this script in the directory with the files you want to create a list for. You can run it against any XML file. Save the output as collectionFileList.xml, or the like.           
     -->
 
     <xsl:template match="/">
