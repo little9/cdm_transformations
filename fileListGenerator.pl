@@ -14,12 +14,12 @@
         # Use a regular expression to ignore files beginning with a period
         next if ($file =~ m/^\./);
         
-	print "<cdmFile filename='$file'>$file</dumpSet>\n";
+	print "<cdmFile filename='$file'>$file</cdmFile>\n";
 	
 
     }
 
-    print '</dump>';
+    print '</cdmFiles>';
     
     closedir(DIR);
     exit 0;
