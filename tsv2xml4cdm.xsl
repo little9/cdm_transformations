@@ -17,14 +17,14 @@
     <xsl:key name="itemKey" match="object" use="@id"/>
 
     <!-- Template to read in the XML file that specifies the TSV file(s) to be parsed. -->
-    <xsl:template match="dumpSet">
+    <xsl:template match="cdmFiles">
         <collections>
-            <xsl:apply-templates select="dump"/>
+            <xsl:apply-templates select="cdmFile"/>
         </collections>
     </xsl:template>
 
     <!-- Main template that parses the TSV and creates structured XML. -->
-    <xsl:template match="dump">
+    <xsl:template match="cdmFile">
         <collection name="{.}">
             <xsl:variable name="text" select="unparsed-text(@filename,'UTF-8')"/>
             <xsl:variable name="header">
