@@ -17,7 +17,7 @@
     <xsl:template match="/">
         <cdmFiles>
             <xsl:for-each
-                select="for $x in collection('.?select=*.xml;recurse=yes;on-error=ignore') return $x">
+                select="for $x in collection('.?select=*.txt;recurse=yes;on-error=ignore') return $x">
                 <xsl:sort select="document-uri(.)"/>
                 <cdmFile filename="{document-uri(.)}">
                     <xsl:value-of select="document-uri(.)"/>
