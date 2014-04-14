@@ -13,11 +13,11 @@
     <xsl:variable name="vLower" select="'aáàbcdeéèfghiíjklmnñoópqrstuúüvwxyz'"/>
     <xsl:variable name="vQuote">"</xsl:variable>
     
-    <xsl:param name="vFitsPath">../../PresMD/fits/fitsFileList.xml</xsl:param>
-    <xsl:param name="vCdmPath">file:/home/timathom/Saxon/Dropbox/Kaltura/BotifollTSV2XMLOutput.xml</xsl:param>
+    <xsl:param name="pFitsPath">../../PresMD/fits/fitsFileList.xml</xsl:param>
+    <xsl:param name="pCdmPath">file:/home/timathom/Saxon/Dropbox/Kaltura/BotifollTSV2XMLOutput.xml</xsl:param>
     
-    <xsl:variable name="vFitsList" select="document($vFitsPath)"/>
-    <xsl:variable name="vCdmMetadata" select="document($vCdmPath)"/>
+    <xsl:variable name="vFitsList" select="document($pFitsPath)"/>
+    <xsl:variable name="vCdmMetadata" select="document($pCdmPath)"/>
     <xsl:param name="vCollectionId">chc5223</xsl:param>
 
     <xsl:template match="/">
