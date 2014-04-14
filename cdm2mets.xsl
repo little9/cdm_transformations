@@ -13,8 +13,8 @@
     <xsl:variable name="vLower" select="'aáàbcdeéèfghiíjklmnñoópqrstuúüvwxyz'"/>
     <xsl:variable name="vQuote">"</xsl:variable>
     
-    <xsl:param name="pFitsPath">../../PresMD/fits/fitsFileList.xml</xsl:param>
-    <xsl:param name="pCdmPath">file:/home/timathom/Saxon/Dropbox/Kaltura/BotifollTSV2XMLOutput.xml</xsl:param>
+    <xsl:param name="pFitsPath">file:/home/timathom/Dropbox/PresMD/fits/fitsFileList.xml</xsl:param>
+    <xsl:param name="pCdmPath">file:/home/timathom/Dropbox/archiveServerExamples/METS/TSV2XML_Example.xml</xsl:param>
     
     <xsl:variable name="vFitsList" select="document($pFitsPath)"/>
     <xsl:variable name="vCdmMetadata" select="document($pCdmPath)"/>
@@ -116,7 +116,7 @@
                             <xsl:variable name="vDate2"
                                 select="substring-after(fits:fileinfo/fits:created,' ')"/>
                             <mets:file>
-                                <xsl:attribute name="ID" select="concat('IMG',substring-before(substring($vFitsId,4),'.'))"/>                                        
+                                <xsl:attribute name="ID" select="concat('OBJ',substring-before(substring($vFitsId,4),'.'))"/>                                        
                                 <xsl:attribute name="MIMETYPE" select="fits:identification/fits:identity/@mimetype"/>
                                 <xsl:attribute name="CREATED" select="concat(translate($vDate1,':','-'),'T',$vDate2)"/>
                                 <xsl:attribute name="SIZE" select="fits:fileinfo/fits:size"/>
@@ -188,24 +188,40 @@
                                                     <xsl:attribute name="DMDID" select="concat('DMD',$vDigId)"/>
                                                     <xsl:attribute name="AMDID" select="concat('AMD',$vDigId)"/>
                                                 </xsl:for-each>
-                                                <xsl:if test="field[@name='archive'][.!=''][not(contains(.,'.url'))]">
-                                                    <mets:fptr FILEID="{concat('IMG',substring(field[@name='archive'],4))}"/>
-                                                    <xsl:if test="$vCdmMetadata/collections/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
-                                                        <mets:fptr FILEID="{concat('TXT',substring(field[@name='archive'],4))}"/>
-                                                    </xsl:if>
-                                                </xsl:if>
+                                                <xsl:choose>
+                                                    <xsl:when test="field[@name='archive'][not(contains(.,'.url'))]!='' and string-length(field[@name='archive'][not(contains(.,'.url'))])&gt;13">
+                                                        <mets:fptr FILEID="{concat('OBJ',substring-before(substring(field[@name='archive'],4),'.'))}"/>
+                                                        <xsl:if test="$vCdmMetadata/collections/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
+                                                            <mets:fptr FILEID="{concat('TXT',substring-before(substring(field[@name='archive'],4),'.'))}"/>
+                                                        </xsl:if>        
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <mets:fptr FILEID="{concat('OBJ',substring-before(substring(field[@name='digitalid'],4),'.'))}"/>
+                                                        <xsl:if test="$vCdmMetadata/collections/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
+                                                            <mets:fptr FILEID="{concat('TXT',substring(field[@name='digitalid'],4))}"/>
+                                                        </xsl:if>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
                                             </mets:div>
                                         </xsl:for-each>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:attribute name="TYPE" select="field[@name='genre']"/>
                                         <xsl:attribute name="LABEL" select="field[@name='title']"/>
-                                        <xsl:if test="field[@name='archive'][.!=''][not(contains(.,'.url'))]">
-                                            <mets:fptr FILEID="{concat('IMG',substring(field[@name='archive'],4))}"/>
-                                            <xsl:if test="$vCdmMetadata/collections/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
-                                                <mets:fptr FILEID="{concat('TXT',substring(field[@name='archive'],4))}"/>
-                                            </xsl:if>
-                                        </xsl:if>
+                                        <xsl:choose>
+                                            <xsl:when test="field[@name='archive'][not(contains(.,'.url'))]!='' and string-length(field[@name='archive'][not(contains(.,'.url'))])&gt;13">
+                                                <mets:fptr FILEID="{concat('OBJ',substring(field[@name='archive'],4))}"/>
+                                                <xsl:if test="$vCdmMetadata/collections/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
+                                                    <mets:fptr FILEID="{concat('TXT',substring-before(substring(field[@name='archive'],4),'.'))}"/>
+                                                </xsl:if>        
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <mets:fptr FILEID="{concat('OBJ',substring(field[@name='digitalid'],4))}"/>
+                                                <xsl:if test="$vCdmMetadata/collections/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
+                                                    <mets:fptr FILEID="{concat('TXT',substring(field[@name='digitalid'],4))}"/>
+                                                </xsl:if>
+                                            </xsl:otherwise>
+                                        </xsl:choose>                                                                                
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </mets:div>
@@ -601,9 +617,11 @@
                     </xsl:otherwise>
                 </xsl:choose>   
             </xsl:for-each>
-            <digitalOrigin>
-                <xsl:text>reformatted digital</xsl:text>
-            </digitalOrigin>
+            <xsl:if test="field[@name='source'][.!=''] or field[@name='originalsource'][.!='']">
+                <digitalOrigin>
+                    <xsl:text>reformatted digital</xsl:text>
+                </digitalOrigin>    
+            </xsl:if>            
         </physicalDescription>                                                                        
         <!-- External links -->
         <xsl:if test="field[@name='website'][.!='']">
