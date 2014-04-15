@@ -925,8 +925,8 @@
                 <mods:relatedItem type="constituent">
                     <xsl:for-each select="$vId">
                         <xsl:attribute name="xlink:href" select="if (contains(.,'.')) 
-                                                         then concat('DMD',substring-before(substring(.,4),'.')) 
-                                                         else (concat('DMD',substring(.,4)))"/>                                                        
+                                                         then concat('#DMD',substring-before(substring(.,4),'.')) 
+                                                         else (concat('#DMD',substring(.,4)))"/>                                                        
                     </xsl:for-each>                    
                 </mods:relatedItem>
             </xsl:for-each>
