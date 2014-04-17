@@ -28,7 +28,7 @@
             xmlns:premis="http://www.loc.gov/standards/premis"
             xmlns:fits="http://hul.harvard.edu/ois/xml/ns/fits/fits_output"
             xmlns:mix="http://www.loc.gov/mix/v20"
-            xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd http://www.loc.gov/standards/premis/v2 http://www.loc.gov/standards/premis/premis.xsd">
+            xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/mods.xsd http://www.loc.gov/standards/premis/v2 http://www.loc.gov/standards/premis/premis.xsd">
 
             <mets:metsHdr>
                 <mets:agent ROLE="CREATOR" TYPE="ORGANIZATION">
