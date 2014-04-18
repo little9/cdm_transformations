@@ -12,21 +12,36 @@
         tsv2xml4cdm.xsl takes TSV file exported from CONTENTdm and transforms it into custom XML that preserves field names and single-level compound object hierarchies.                                                           
     -->
 
+    <!--
+        
+        Modified by James Little in April 2014 to work with a file passed as a paramter. Example:
+        
+        java -jar saxon9pe.jar -xsl:tsv2xml4cdm.xsl -s:tsv3xml4cdm.xsl cdmFilePath="file:///Users/jlittle/Desktop/chc9999_2014-04-18.txt"
+        
+    -->
+
     <!-- Create keys for building compound objects. -->
     <xsl:key name="objectKey" match="item" use="@id"/>
     <xsl:key name="itemKey" match="object" use="@id"/>
-
-    <!-- Template to read in the XML file that specifies the TSV file(s) to be parsed. -->
-    <xsl:template match="cdmFiles">
-        <collections>
-            <xsl:apply-templates select="cdmFile"/>
-        </collections>
+    
+    <!-- The template that receives the file path parameter. -->
+    
+    <xsl:param name="cdmFilePath"></xsl:param>
+   
+    <xsl:template name="cdmFile">
+    <cdmFiles>
+        <cdmFile>
+                <xsl:value-of select="$cdmFilePath"></xsl:value-of>
+        </cdmFile>
+        <xsl:apply-templates></xsl:apply-templates>
+    </cdmFiles>
     </xsl:template>
 
+    
     <!-- Main template that parses the TSV and creates structured XML. -->
-    <xsl:template match="cdmFile">
+    <xsl:template match="cdmFile" name="xmlFromTsv">
         <collection name="{.}">
-            <xsl:variable name="text" select="unparsed-text(@filename,'UTF-8')"/>
+            <xsl:variable name="text" select="unparsed-text($cdmFilePath,'UTF-8')"/>
             <xsl:variable name="header">
                 <xsl:analyze-string select="$text" regex="(..*)">
                     <xsl:matching-substring>
