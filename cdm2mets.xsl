@@ -13,8 +13,8 @@
     <xsl:variable name="vLower" select="'aáàbcdeéèfghiíjklmnñoópqrstuúüvwxyz'"/>
     <xsl:variable name="vQuote">"</xsl:variable>
     
-    <xsl:param name="pFitsPath">file:/home/timathom/Dropbox/PresMD/fits/fitsFileList.xml</xsl:param>
-    <xsl:param name="pCdmPath">file:/home/timathom/Dropbox/archiveServerExamples/METS/TSV2XML_Example.xml</xsl:param>
+    <xsl:param name="pFitsPath"></xsl:param>
+    <xsl:param name="pCdmPath"></xsl:param>
     
     <xsl:variable name="vFitsList" select="document($pFitsPath)"/>
     <xsl:variable name="vCdmMetadata" select="document($pCdmPath)"/>

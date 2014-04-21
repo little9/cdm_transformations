@@ -11,13 +11,18 @@
 
     <!--
         fileListGenerator.xsl outputs an XML list of files in a directory. 
-        Place this script in the directory with the files you want to create a list for. You can run it against any XML file. Save the output as collectionFileList.xml, or the like.           
+        Place this script in the directory with the files you want to create a list for. You can run it against any XML file. Save the output as collectionFileList.xml, or the like.   
+
+
+        Modified by James Little to use a param for the path 
+        
     -->
+    <xsl:param name="fitsPath"></xsl:param>
 
     <xsl:template match="/">
         <cdmFiles>
             <xsl:for-each
-                select="for $x in collection('.?select=*.xml;recurse=yes;on-error=ignore') return $x">
+                select="for $x in collection(concat($fitsPath, '?select=*.xml;recurse=yes;on-error=ignore')) return $x">
                 <xsl:sort select="document-uri(.)"/>
                 <cdmFile filename="{document-uri(.)}">
                     <xsl:value-of select="document-uri(.)"/>
