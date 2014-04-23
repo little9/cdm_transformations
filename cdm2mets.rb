@@ -41,9 +41,9 @@ def mets_xml_out(xml, collection_id)
 end
 
 # The commands that do the transformations 
-transform_tsv_command = "java -jar saxon9pe.jar -xsl:tsv2xml4cdm.xsl -s:tsv2xml4cdm.xsl cdmFilePath=#{cdmfile}"
-fits_list_command = "java -jar saxon9pe.jar -xsl:fileListGenerator.xsl -s:fileListGenerator.xsl fitsPath=#{fitspath}"
-cdm_to_mets_command = "java -jar saxon9pe.jar -xsl:cdm2mets.xsl -s:cdm2mets.xsl fitsPath=#{collection_id}.fits.xml pCdmPath=#{collection_id}.cdm.xml"
+transform_tsv_command = "java -jar saxon9pe.jar -xsl:xsl/tsv2xml4cdm.xsl -s:xsl/tsv2xml4cdm.xsl cdmFilePath=#{cdmfile}"
+fits_list_command = "java -jar saxon9pe.jar -xsl:xsl/fileListGenerator.xsl -s:xsl/fileListGenerator.xsl fitsPath=#{fitspath}"
+cdm_to_mets_command = "java -jar saxon9pe.jar -xsl:xsl/cdm2mets.xsl -s:xsl/cdm2mets.xsl fitsPath=../#{collection_id}.fits.xml pCdmPath=../#{collection_id}.cdm.xml"
 
 
 # Run the transformations and output to files 
