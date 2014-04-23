@@ -3,7 +3,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:fits="http://hul.harvard.edu/ois/xml/ns/fits/fits_output"
     xmlns:mets="http://www.loc.gov/mets/" xmlns:premis="http://www.loc.gov/standards/premis"
-    xmlns:marc="http://www.loc.gov/marc21/slim" xmlns:mix="http://www.loc.gov/mix/v20"
+    xmlns:marc="http://www.loc.gov/marc2apple/slim" xmlns:mix="http://www.loc.gov/mix/v20"
     xmlns:mods="http://www.loc.gov/mods/v3" exclude-result-prefixes="xs" version="2.0">
 
     <xsl:strip-space elements="*"/>
@@ -19,7 +19,6 @@
     <xsl:variable name="vFitsList" select="document($pFitsPath)"/>
     <xsl:variable name="vCdmMetadata" select="document($pCdmPath)"/>
     <xsl:param name="vCollectionId">chc5223</xsl:param>
-
     <xsl:template match="/">
         <mets:mets xmlns:xlink="http://www.w3.org/1999/xlink"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -36,9 +35,9 @@
                 </mets:agent>
             </mets:metsHdr>
 
-            <xsl:if test="$vCdmMetadata//collections/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">
+            <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">
                 <xsl:for-each 
-                    select="$vCdmMetadata/collections/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">                    
+                    select="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">                    
                     <xsl:variable name="vId" select="self::node()[name()='singleItem']/field[@name='archive'][.!='']|self::node()[name()='objectRecord']/field[@name='objectid' or @name='objectno.'][.!='']"/>                    
                     <xsl:variable name="vPosCount1" select="position()"/>
                     <mets:dmdSec>
@@ -128,9 +127,9 @@
                         </xsl:for-each>
                     </xsl:for-each>                    
                 </mets:fileGrp>
-                <xsl:if test="$vCdmMetadata/collections/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
+                <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
                     <mets:fileGrp ID="FG2" USE="ocr">                                         
-                        <xsl:for-each select="$vCdmMetadata/collections/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext']">
+                        <xsl:for-each select="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext']">
                             <xsl:variable name="vPosCount" select="position()"/>                                       
                             <xsl:if test="../field[@name='archive'][.!=''][not(contains(.,'.url'))]">
                                 <xsl:result-document href="{if (contains(../field[@name='archive'],'.')) 
@@ -155,14 +154,14 @@
                 </xsl:if>                
             </mets:fileSec>
 
-            <xsl:if test="$vCdmMetadata//collections/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">
+            <xsl:if test="$vCdmMetadata//collection/descendant::node()[name()='singleItem' or name()='objectRecord']">
                 <mets:structMap ID="SM1" TYPE="physical">
                     <mets:div>
                         <xsl:attribute name="ORDER" select="'1'"/>
                         <xsl:attribute name="ID" select="'SM1.1'"/>
                         <xsl:attribute name="TYPE" select="'collection'"/>                        
                         <xsl:attribute name="LABEL" select="distinct-values($vCdmMetadata/collections/collection/descendant::field[@name='collectiontitle' or @name='collection'])"/>
-                        <xsl:for-each select="/collections/collection/child::node()">
+                        <xsl:for-each select="/collection/child::node()">
                             <mets:div>
                                 <xsl:attribute name="ORDER" select="position()"/>
                                 <xsl:attribute name="TYPE" select="descendant::field[@name='genre'][1]"/>

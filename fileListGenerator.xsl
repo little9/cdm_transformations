@@ -20,15 +20,15 @@
     <xsl:param name="fitsPath"></xsl:param>
 
     <xsl:template match="/">
-        <cdmFiles>
+        <fitsFiles>
             <xsl:for-each
                 select="for $x in collection(concat($fitsPath, '?select=*.xml;recurse=yes;on-error=ignore')) return $x">
                 <xsl:sort select="document-uri(.)"/>
-                <cdmFile filename="{document-uri(.)}">
+                <fitsFile filename="{document-uri(.)}">
                     <xsl:value-of select="document-uri(.)"/>
-                </cdmFile>
+                </fitsFile>
             </xsl:for-each>
-        </cdmFiles>
+        </fitsFiles>
     </xsl:template>
 
 </xsl:stylesheet>

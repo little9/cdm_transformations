@@ -27,6 +27,7 @@
     <!-- The template that receives the file path parameter. -->
     
     <xsl:param name="cdmFilePath"></xsl:param>
+    <xsl:param name="cdmCollectionId"></xsl:param>
    
     <xsl:template name="cdmFile">
     <cdmFiles>
