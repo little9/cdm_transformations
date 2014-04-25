@@ -39,14 +39,21 @@
             <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">
                 <xsl:for-each 
                     select="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">                    
-                    <xsl:variable name="vId" select="self::node()[name()='singleItem']/field[@name='archive'][.!='']|self::node()[name()='objectRecord']/field[@name='objectid' or @name='objectno.'][.!='']"/>                    
+                    <xsl:variable name="vId" select="self::node()[name()='singleItem']/field[@name='archive']|self::node()[name()='objectRecord']/field[@name='objectid' or @name='objectno.']"/>                    
                     <xsl:variable name="vPosCount1" select="position()"/>
                     <mets:dmdSec>
                         <xsl:for-each select="$vId">
-                            <xsl:attribute name="ID">
-                                <xsl:value-of select="if (contains(.,'.')) 
-                                              then concat('DMD',substring-before(substring(.,4),'.')) 
-                                              else (concat('DMD',substring(.,4)))"/>
+                            <xsl:attribute name="ID">                                
+                                <xsl:choose>
+                                    <xsl:when test=".=''">
+                                        <xsl:value-of select="concat('WARNING_',$vPosCount1)"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="if (contains(.,'.')) 
+                                            then concat('DMD',substring-before(substring(.,4),'.')) 
+                                            else (concat('DMD',substring(.,4)))"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>                                
                             </xsl:attribute>    
                         </xsl:for-each>                        
                         <mets:mdWrap MDTYPE="MODS">
@@ -83,14 +90,12 @@
             </xsl:if>            
 
             <mets:amdSec>
-                <xsl:for-each select="$vFitsList/fitsFiles/fitsFile">
+                <xsl:for-each select="$vFitsList/fitsFiles/fitsFile[not(contains(@filename,'.mtf'))]">
                     <xsl:variable name="vPosCount" select="position()"/>  
                     <xsl:for-each select="document(@filename)/fits:fits">                        
-                        <xsl:variable name="vFitsId"
-                            select="substring-after(fits:fileinfo/fits:filename,concat($pCollectionId,'/'))"/>                        
-                        <mets:techMD ID="{if (contains($vFitsId,'.')) 
-                                     then concat('AMD',substring-before(substring($vFitsId,4),'.')) 
-                                     else (concat('AMD',substring($vFitsId,4)))}">
+                        <xsl:variable name="vFitsFileName"
+                            select="fits:fileinfo/fits:filename"/>                        
+                        <mets:techMD ID="{concat('AMD',substring-before(substring($vFitsFileName,4),'.'))}">
                             <mets:mdWrap MDTYPE="OTHER">
                                 <xsl:if test="fits:metadata//mix:mix">
                                     <xsl:attribute name="LABEL" select="'MIX'"/>    
@@ -106,19 +111,16 @@
 
             <mets:fileSec>
                 <mets:fileGrp ID="FG1" USE="master">                                         
-                    <xsl:for-each select="$vFitsList/fitsFiles/fitsFile">
+                    <xsl:for-each select="$vFitsList/fitsFiles/fitsFile[not(contains(@filename,'.mtf'))]">
                         <xsl:variable name="vPosCount" select="position()"/>
                         <xsl:for-each select="document(@filename)/fits:fits">
-                            <xsl:variable name="vFitsId"
-                                select="substring-after(fits:fileinfo/fits:filename,concat($pCollectionId,'/'))"/>                                
-                            <xsl:variable name="vDate1"
-                                select="substring-before(fits:fileinfo/fits:created,' ')"/>
-                            <xsl:variable name="vDate2"
-                                select="substring-after(fits:fileinfo/fits:created,' ')"/>
+                            <xsl:variable name="vFitsFileName"
+                                select="fits:fileinfo/fits:filename"/>   
+                            <xsl:variable name="vDate" select="concat(fits:fileinfo/fits:lastmodified[@toolname='Tika'],'-04:00')"/>                            
                             <mets:file>
-                                <xsl:attribute name="ID" select="concat('OBJ',substring-before(substring($vFitsId,4),'.'))"/>                                        
+                                <xsl:attribute name="ID" select="concat('OBJ',substring-before(substring($vFitsFileName,4),'.'))"/>                                        
                                 <xsl:attribute name="MIMETYPE" select="fits:identification/fits:identity/@mimetype"/>
-                                <xsl:attribute name="CREATED" select="concat(translate($vDate1,':','-'),'T',$vDate2)"/>
+                                <xsl:attribute name="CREATED" select="$vDate"/>
                                 <xsl:attribute name="SIZE" select="fits:fileinfo/fits:size"/>
                                 <xsl:attribute name="CHECKSUMTYPE" select="'MD5'"/>
                                 <xsl:attribute name="CHECKSUM" select="fits:fileinfo/fits:md5checksum"/>                                        
@@ -155,80 +157,107 @@
                 </xsl:if>                
             </mets:fileSec>
 
-            <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">
-                <mets:structMap ID="SM1" TYPE="physical">
-                    <mets:div>
-                        <xsl:attribute name="ORDER" select="'1'"/>
-                        <xsl:attribute name="ID" select="'SM1.1'"/>
-                        <xsl:attribute name="TYPE" select="'collection'"/>                        
-                        <xsl:attribute name="LABEL" select="distinct-values($vCdmMetadata/collection/descendant::field[@name='collectiontitle' or @name='collection'])"/>
-                        <xsl:for-each select="$vCdmMetadata/collection/child::node()">
-                            <mets:div>
-                                <xsl:attribute name="ORDER" select="position()"/>
-                                <xsl:attribute name="TYPE" select="descendant::field[@name='genre'][1]"/>
-                                <xsl:for-each select="descendant::field[@name='objectid' or @name='objectno.'][1]">
-                                    <xsl:variable name="vObjId" select="substring(.,4)"/>                            
-                                    <xsl:attribute name="DMDID" select="concat('DMD',$vObjId)"/>                            
+            <xsl:choose>
+                <xsl:when test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">
+                    <mets:structMap ID="SM1" TYPE="physical">
+                        <mets:div>
+                            <xsl:attribute name="ORDER" select="'1'"/>
+                            <xsl:attribute name="ID" select="'SM1.1'"/>
+                            <xsl:attribute name="TYPE" select="'collection'"/>                        
+                            <xsl:attribute name="LABEL" select="distinct-values($vCdmMetadata/collection/descendant::field[@name='collectiontitle' or @name='collection'])"/>
+                            <xsl:for-each select="$vCdmMetadata/collection/child::node()">
+                                <mets:div>
+                                    <xsl:attribute name="ORDER" select="position()"/>
+                                    <xsl:attribute name="TYPE" select="descendant::field[@name='genre'][1]"/>
+                                    <xsl:for-each select="descendant::field[@name='objectid' or @name='objectno.'][1]">
+                                        <xsl:variable name="vObjId" select="substring(.,4)"/>                            
+                                        <xsl:attribute name="DMDID" select="concat('DMD',$vObjId)"/>                            
+                                    </xsl:for-each>
+                                    <xsl:for-each select="descendant::field[@name='digitalid'][1][not(../field[@name='objectid' or @name='objectno.'][.!=''])]">
+                                        <xsl:variable name="vDigId" select="substring(.,4)"/>                            
+                                        <xsl:attribute name="DMDID" select="concat('DMD',$vDigId)"/>
+                                        <xsl:attribute name="ADMID" select="concat('AMD',$vDigId)"/>
+                                    </xsl:for-each>
+                                    <xsl:attribute name="LABEL" select="descendant::field[@name='title'][1]"/>                                                                                                                                
+                                    <xsl:choose>
+                                        <xsl:when test="pageRecord">
+                                            <xsl:for-each select="pageRecord">
+                                                <mets:div>
+                                                    <xsl:attribute name="ORDER" select="position()"/>
+                                                    <!-- NB: might want to change the @TYPE attribute dynamically to reflect the actual content type. -->
+                                                    <xsl:attribute name="TYPE" select="'item'"/>
+                                                    <xsl:attribute name="LABEL" select="field[@name='title']"/>
+                                                    <xsl:for-each select="field[@name='digitalid'][1][not(../field[@name='objectid' or @name='objectno.'][.!=''])]">
+                                                        <xsl:variable name="vDigId" select="substring(.,4)"/>                            
+                                                        <xsl:attribute name="DMDID" select="concat('DMD',$vDigId)"/>
+                                                        <xsl:attribute name="ADMID" select="concat('AMD',$vDigId)"/>
+                                                    </xsl:for-each>
+                                                    <xsl:choose>
+                                                        <xsl:when test="field[@name='archive'][not(contains(.,'.url'))]!='' and string-length(field[@name='archive'][not(contains(.,'.url'))])&gt;13">
+                                                            <mets:fptr FILEID="{concat('OBJ',substring-before(substring(field[@name='archive'],4),'.'))}"/>
+                                                            <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
+                                                                <mets:fptr FILEID="{concat('TXT',substring-before(substring(field[@name='archive'],4),'.'))}"/>
+                                                            </xsl:if>        
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <mets:fptr FILEID="{concat('OBJ',substring-before(substring(field[@name='digitalid'],4),'.'))}"/>
+                                                            <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
+                                                                <mets:fptr FILEID="{concat('TXT',substring(field[@name='digitalid'],4))}"/>
+                                                            </xsl:if>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </mets:div>
+                                            </xsl:for-each>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:attribute name="TYPE" select="field[@name='genre']"/>
+                                            <xsl:attribute name="LABEL" select="field[@name='title']"/>
+                                            <xsl:choose>
+                                                <xsl:when test="field[@name='archive'][not(contains(.,'.url'))]!='' and string-length(field[@name='archive'][not(contains(.,'.url'))])&gt;13">
+                                                    <mets:fptr FILEID="{concat('OBJ',substring-before(substring(field[@name='archive'],4),'.'))}"/>
+                                                    <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
+                                                        <mets:fptr FILEID="{concat('TXT',substring-before(substring(field[@name='archive'],4),'.'))}"/>
+                                                    </xsl:if>        
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <mets:fptr FILEID="{concat('OBJ',substring-before(substring(field[@name='archive'],4),'.'))}"/>
+                                                    <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
+                                                        <mets:fptr FILEID="{concat('TXT',substring(field[@name='digitalid'],4))}"/>
+                                                    </xsl:if>
+                                                </xsl:otherwise>
+                                            </xsl:choose>                                                                                
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </mets:div>
+                            </xsl:for-each>
+                        </mets:div>
+                    </mets:structMap>
+                </xsl:when>
+                <xsl:otherwise>
+                    <mets:structMap ID="SM1" TYPE="physical">
+                        <mets:div>
+                            <xsl:attribute name="ORDER" select="'1'"/>
+                            <xsl:attribute name="ID" select="'SM1.1'"/>
+                            <xsl:attribute name="TYPE" select="'collection'"/>                        
+                            <xsl:attribute name="LABEL" select="'Collection without descriptive metadata'"/>
+                            <xsl:for-each select="$vFitsList/fitsFiles/fitsFile[not(contains(@filename,'.mtf'))]">
+                                <xsl:variable name="vPosCount" select="position()"/>
+                                <xsl:for-each select="document(@filename)/fits:fits">
+                                    <xsl:variable name="vFitsFileName"
+                                        select="fits:fileinfo/fits:filename"/>                                
+                                    <mets:div>
+                                        <xsl:attribute name="ORDER">
+                                            <xsl:value-of select="$vPosCount"/>
+                                        </xsl:attribute>
+                                        <xsl:attribute name="TYPE" select="'file'"/>
+                                        <mets:fptr FILEID="{concat('OBJ',substring(substring-before($vFitsFileName,'.'),4))}"/>
+                                    </mets:div>                                                                                                                                 
                                 </xsl:for-each>
-                                <xsl:for-each select="descendant::field[@name='digitalid'][1][not(../field[@name='objectid' or @name='objectno.'][.!=''])]">
-                                    <xsl:variable name="vDigId" select="substring(.,4)"/>                            
-                                    <xsl:attribute name="DMDID" select="concat('DMD',$vDigId)"/>
-                                    <xsl:attribute name="AMDID" select="concat('AMD',$vDigId)"/>
-                                </xsl:for-each>
-                                <xsl:attribute name="LABEL" select="descendant::field[@name='title'][1]"/>                                                                                                                                
-                                <xsl:choose>
-                                    <xsl:when test="pageRecord">
-                                        <xsl:for-each select="pageRecord">
-                                            <mets:div>
-                                                <xsl:attribute name="ORDER" select="position()"/>
-                                                <xsl:attribute name="TYPE" select="'page'"/>
-                                                <xsl:attribute name="LABEL" select="field[@name='title']"/>
-                                                <xsl:for-each select="field[@name='digitalid'][1][not(../field[@name='objectid' or @name='objectno.'][.!=''])]">
-                                                    <xsl:variable name="vDigId" select="substring(.,4)"/>                            
-                                                    <xsl:attribute name="DMDID" select="concat('DMD',$vDigId)"/>
-                                                    <xsl:attribute name="AMDID" select="concat('AMD',$vDigId)"/>
-                                                </xsl:for-each>
-                                                <xsl:choose>
-                                                    <xsl:when test="field[@name='archive'][not(contains(.,'.url'))]!='' and string-length(field[@name='archive'][not(contains(.,'.url'))])&gt;13">
-                                                        <mets:fptr FILEID="{concat('OBJ',substring-before(substring(field[@name='archive'],4),'.'))}"/>
-                                                        <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
-                                                            <mets:fptr FILEID="{concat('TXT',substring-before(substring(field[@name='archive'],4),'.'))}"/>
-                                                        </xsl:if>        
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <mets:fptr FILEID="{concat('OBJ',substring-before(substring(field[@name='digitalid'],4),'.'))}"/>
-                                                        <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
-                                                            <mets:fptr FILEID="{concat('TXT',substring(field[@name='digitalid'],4))}"/>
-                                                        </xsl:if>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                            </mets:div>
-                                        </xsl:for-each>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="TYPE" select="field[@name='genre']"/>
-                                        <xsl:attribute name="LABEL" select="field[@name='title']"/>
-                                        <xsl:choose>
-                                            <xsl:when test="field[@name='archive'][not(contains(.,'.url'))]!='' and string-length(field[@name='archive'][not(contains(.,'.url'))])&gt;13">
-                                                <mets:fptr FILEID="{concat('OBJ',substring(field[@name='archive'],4))}"/>
-                                                <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
-                                                    <mets:fptr FILEID="{concat('TXT',substring-before(substring(field[@name='archive'],4),'.'))}"/>
-                                                </xsl:if>        
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <mets:fptr FILEID="{concat('OBJ',substring(field[@name='digitalid'],4))}"/>
-                                                <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='pageRecord']/field[@name='fulltext'][.!='']">
-                                                    <mets:fptr FILEID="{concat('TXT',substring(field[@name='digitalid'],4))}"/>
-                                                </xsl:if>
-                                            </xsl:otherwise>
-                                        </xsl:choose>                                                                                
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </mets:div>
-                        </xsl:for-each>
-                    </mets:div>
-                </mets:structMap>
-            </xsl:if>
+                            </xsl:for-each>                                                
+                        </mets:div>
+                    </mets:structMap>
+                </xsl:otherwise>
+            </xsl:choose>                                       
         </mets:mets>
     </xsl:template>
     
@@ -431,13 +460,29 @@
                 <xsl:when test="contains(.,';')">
                     <xsl:for-each select="tokenize(.,';')">
                         <mods:typeOfResource>
-                            <xsl:value-of select="normalize-space(lower-case(.))"/>
+                            <!-- Conditions for matching MODS vocab. -->
+                            <xsl:choose>
+                                <xsl:when test="normalize-space(lower-case(.))='image'">
+                                    <xsl:value-of select="'still image'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="normalize-space(lower-case(.))"/>
+                                </xsl:otherwise>
+                            </xsl:choose>                            
                         </mods:typeOfResource>
                     </xsl:for-each>
                 </xsl:when>
                 <xsl:otherwise>
                     <mods:typeOfResource>
-                        <xsl:value-of select="normalize-space(lower-case(.))"/>
+                        <!-- Conditions for matching MODS vocab. -->
+                        <xsl:choose>
+                            <xsl:when test="normalize-space(lower-case(.))='image'">
+                                <xsl:value-of select="'still image'"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="normalize-space(lower-case(.))"/>
+                            </xsl:otherwise>
+                        </xsl:choose>   
                     </mods:typeOfResource>
                 </xsl:otherwise>
             </xsl:choose>                                            
@@ -599,7 +644,7 @@
             </xsl:choose>                                            
         </xsl:for-each>                                                                                                                                                
         <!-- Physical description of digital object -->                                    
-        <physicalDescription>
+        <mods:physicalDescription>
             <!-- Format/MIME type -->
             <xsl:for-each select="field[@name='format'][.!='']">
                 <xsl:choose>
@@ -622,7 +667,7 @@
                     <xsl:text>reformatted digital</xsl:text>
                 </digitalOrigin>    
             </xsl:if>            
-        </physicalDescription>                                                                        
+        </mods:physicalDescription>                                                                        
         <!-- External links -->
         <xsl:if test="field[@name='website'][.!='']">
             <mods:relatedItem type="references">
@@ -671,17 +716,15 @@
                 <xsl:choose>
                     <xsl:when test="contains(.,';')">
                         <xsl:for-each select="tokenize(.,';')">                                                        
-                            <mods:recordOrigin>
+                            <mods:recordContentSource>
                                 <xsl:value-of select="normalize-space(.)"/>
-                            </mods:recordOrigin>                                                        
+                            </mods:recordContentSource>                                                        
                         </xsl:for-each>
                     </xsl:when>
-                    <xsl:otherwise>
-                        <mods:recordInfo>
-                            <mods:recordOrigin>
-                                <xsl:value-of select="normalize-space(.)"/>
-                            </mods:recordOrigin>
-                        </mods:recordInfo>
+                    <xsl:otherwise>                        
+                        <mods:recordContentSource>
+                            <xsl:value-of select="normalize-space(.)"/>
+                        </mods:recordContentSource>                        
                     </xsl:otherwise>
                 </xsl:choose>
             </mods:recordInfo>                                            
@@ -719,7 +762,7 @@
             </mods:identifier>    
         </xsl:if>
         <xsl:if test="field[@name='uploadid'][.!='']">
-            <mods:identifier type="object">
+            <mods:identifier type="upload">
                 <xsl:value-of select="normalize-space(field[@name='uploadid'])"/>
             </mods:identifier>    
         </xsl:if>
