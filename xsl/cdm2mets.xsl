@@ -646,7 +646,7 @@
         <!-- Physical description of digital object -->                                    
         <mods:physicalDescription>
             <!-- Format/MIME type -->
-            <xsl:for-each select="field[@name='format'][.!='']">
+            <xsl:for-each select="field[@name='format'][.!='']|following-sibling::pageRecord[1]/field[@name='format'][.!='']">
                 <xsl:choose>
                     <xsl:when test="contains(.,';')">
                         <xsl:for-each select="tokenize(.,';')">
