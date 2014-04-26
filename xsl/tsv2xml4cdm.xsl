@@ -27,21 +27,11 @@
     <!-- The template that receives the file path parameter. -->
     
     <xsl:param name="cdmFilePath"></xsl:param>
-    <xsl:param name="cdmCollectionId"></xsl:param>
-   
-    <xsl:template name="cdmFile">
-    <cdmFiles>
-        <cdmFile>
-                <xsl:value-of select="$cdmFilePath"></xsl:value-of>
-        </cdmFile>
-        <xsl:apply-templates></xsl:apply-templates>
-    </cdmFiles>
-    </xsl:template>
-
-    
+    <xsl:param name="cdmCollectionId"></xsl:param>       
+        
     <!-- Main template that parses the TSV and creates structured XML. -->
-    <xsl:template match="cdmFile" name="xmlFromTsv">
-        <collection name="{.}">
+    <xsl:template match="/">        
+        <collection name="{$cdmCollectionId}">            
             <xsl:variable name="text" select="unparsed-text($cdmFilePath,'UTF-8')"/>
             <xsl:variable name="header">
                 <xsl:analyze-string select="$text" regex="(..*)">
