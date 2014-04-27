@@ -14,7 +14,7 @@
     <xsl:variable name="vQuote">"</xsl:variable>
     
     <xsl:param name="pFitsPath"></xsl:param>
-    <xsl:param name="pCdmPath">crockwell.xml</xsl:param>
+    <xsl:param name="pCdmPath"></xsl:param>
     
     <xsl:variable name="vFitsList" select="document($pFitsPath)"/>
     <xsl:variable name="vCdmMetadata" select="document($pCdmPath)"/>
