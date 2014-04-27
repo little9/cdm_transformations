@@ -14,7 +14,7 @@
     <xsl:variable name="vQuote">"</xsl:variable>
     
     <xsl:param name="pFitsPath"></xsl:param>
-    <xsl:param name="pCdmPath"></xsl:param>
+    <xsl:param name="pCdmPath">crockwell.xml</xsl:param>
     
     <xsl:variable name="vFitsList" select="document($pFitsPath)"/>
     <xsl:variable name="vCdmMetadata" select="document($pCdmPath)"/>
@@ -39,7 +39,9 @@
             <xsl:if test="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">
                 <xsl:for-each 
                     select="$vCdmMetadata/collection/descendant::node()[name()='singleItem' or name()='objectRecord']">                    
-                    <xsl:variable name="vId" select="self::node()[name()='singleItem']/field[@name='archive']|self::node()[name()='objectRecord']/field[@name='objectid' or @name='objectno.']"/>                    
+                    <xsl:variable name="vId" select="if (self::node()[name()='singleItem']/field[@name='archive']!='') 
+                        then self::node()[name()='singleItem']/field[@name='archive']
+                        else (self::node()[name()='objectRecord']/field[@name='objectid' or @name='objectno.'])"/>                    
                     <xsl:variable name="vPosCount1" select="position()"/>
                     <mets:dmdSec>
                         <xsl:for-each select="$vId">
@@ -646,7 +648,7 @@
         <!-- Physical description of digital object -->                                    
         <mods:physicalDescription>
             <!-- Format/MIME type -->
-            <xsl:for-each select="field[@name='format'][.!='']|following-sibling::pageRecord[1]/field[@name='format'][.!='']">
+            <xsl:for-each select="field[@name='format'][.!='']">
                 <xsl:choose>
                     <xsl:when test="contains(.,';')">
                         <xsl:for-each select="tokenize(.,';')">
@@ -663,9 +665,9 @@
                 </xsl:choose>   
             </xsl:for-each>
             <xsl:if test="field[@name='source'][.!=''] or field[@name='originalsource'][.!='']">
-                <digitalOrigin>
+                <mods:digitalOrigin>
                     <xsl:text>reformatted digital</xsl:text>
-                </digitalOrigin>    
+                </mods:digitalOrigin>    
             </xsl:if>            
         </mods:physicalDescription>                                                                        
         <!-- External links -->
@@ -849,25 +851,12 @@
                     </mods:originInfo>
                 </xsl:if>
                 <!-- Physical description of original object -->
-                <xsl:for-each select="field[@name='physicaldescription'][.!='']">
-                    <xsl:choose>
-                        <xsl:when test="contains(.,';')">
-                            <xsl:for-each select="tokenize(.,';')">
-                                <mods:physicalDescription>
-                                    <mods:extent>
-                                        <xsl:value-of select="normalize-space(.)"/>
-                                    </mods:extent>
-                                </mods:physicalDescription>
-                            </xsl:for-each>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <mods:physicalDescription>
-                                <mods:extent>
-                                    <xsl:value-of select="normalize-space(.)"/>
-                                </mods:extent>
-                            </mods:physicalDescription>
-                        </xsl:otherwise>
-                    </xsl:choose>                                            
+                <xsl:for-each select="field[@name='physicaldescription'][.!='']">                    
+                    <mods:physicalDescription>
+                        <mods:extent>
+                            <xsl:value-of select="normalize-space(.)"/>
+                        </mods:extent>
+                    </mods:physicalDescription>                                                               
                 </xsl:for-each>
                 <xsl:for-each select="field[@name='donor'][.!='']">
                     <xsl:choose>
