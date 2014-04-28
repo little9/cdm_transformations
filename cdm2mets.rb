@@ -73,7 +73,7 @@ def create_mets(arguments)
   # The commands that do the transformations 
   transform_tsv_command = "java -jar saxon9pe.jar -xsl:xsl/tsv2xml4cdm.xsl -s:xsl/tsv2xml4cdm.xsl cdmFilePath=../out/#{collection_id}.tsv.txt"
   fits_list_command = "java -jar saxon9pe.jar -xsl:xsl/fileListGenerator.xsl -s:xsl/fileListGenerator.xsl fitsPath=../#{fitspath}"
-  cdm_to_mets_command = "java -jar saxon9pe.jar -xsl:xsl/cdm2mets.xsl -s:xsl/cdm2mets.xsl fitsPath=../out/#{collection_id}.fits.xml pCdmPath=../out/#{collection_id}.cdm.xml"
+  cdm_to_mets_command = "java -jar saxon9pe.jar -xsl:xsl/cdm2mets.xsl -s:xsl/cdm2mets.xsl pFitsPath=../out/#{collection_id}.fits.xml pCdmPath=../out/#{collection_id}.cdm.xml"
 
 
   # Run the transformations and output to files 
