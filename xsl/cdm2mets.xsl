@@ -118,7 +118,7 @@
                         <xsl:for-each select="document(@filename)/fits:fits">
                             <xsl:variable name="vFitsFileName"
                                 select="fits:fileinfo/fits:filename"/>   
-                            <xsl:variable name="vDate" select="concat(fits:fileinfo/fits:lastmodified[@toolname='Tika'],'-04:00')"/>                            
+                            <xsl:variable name="vDate" select="concat('','2002-10-10T12:00:00-05:00')"/>                            
                             <mets:file>
                                 <xsl:attribute name="ID" select="concat('OBJ',substring-before(substring($vFitsFileName,4),'.'))"/>                                        
                                 <xsl:attribute name="MIMETYPE" select="fits:identification/fits:identity/@mimetype"/>
