@@ -74,14 +74,14 @@
     <xsl:variable name="quote">"</xsl:variable>
 
     <xsl:variable name="numFiles">
-        <xsl:for-each select="/collections/collection/compoundObject/objectRecord">
+        <xsl:for-each select="/collection/compoundObject/objectRecord">
             <xsl:value-of select="number(substring-before(field[@name='physicaldescription'][.!=''],' '))"
             />
         </xsl:for-each>
     </xsl:variable>
 
     <xsl:template match="/">                
-        <xsl:for-each select="/collections/collection">
+        <xsl:for-each select="/collection">
             <xsl:if test="child::node()/name()='compoundObject'">
                 <xsl:for-each select="compoundObject/objectRecord">                    
                     <xsl:variable name="num"
