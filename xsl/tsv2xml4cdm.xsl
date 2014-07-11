@@ -11,27 +11,52 @@
     <!--
         tsv2xml4cdm.xsl takes TSV file exported from CONTENTdm and transforms it into custom XML that preserves field names and single-level compound object hierarchies.                                                           
     -->
-
+    
     <!--
         
         Modified by James Little in April 2014 to work with a file passed as a paramter. Example:
         
+ 
         java -jar saxon9pe.jar -xsl:tsv2xml4cdm.xsl -s:tsv3xml4cdm.xsl cdmFilePath="file:///Users/jlittle/Desktop/chc9999_2014-04-18.txt"
         
+ 
     -->
-
+    
+    
+    <!-- 
+        
+        Don't create self closing empty elements
+        
+        !-->
+    
+    
+    <xsl:template match="node()|@*">
+        <xsl:copy>
+            <xsl:apply-templates select="node()|@*"/>
+        </xsl:copy>
+    </xsl:template>
+    
+    <xsl:template match="section[not(.//text())]"/>
+    <xsl:template match="*[ancestor::section and not(text())]"/>
+    
+    
+    
+    <!-- special handler for elements that have no child nodes:
+     they are removed by this empty template -->
+    <xsl:template match="*[not(node())]"/>
+    
     <!-- Create keys for building compound objects. -->
     <xsl:key name="objectKey" match="item" use="@id"/>
     <xsl:key name="itemKey" match="object" use="@id"/>
     
     <!-- The template that receives the file path parameter. -->
     
-    <xsl:param name="cdmFilePath"></xsl:param>
-    <xsl:param name="cdmCollectionId"></xsl:param>       
-        
+    <xsl:param name="cdmFilePath"/>
+    <xsl:param name="cdmCollectionId"/>
+    
     <!-- Main template that parses the TSV and creates structured XML. -->
-    <xsl:template match="/">        
-        <collection name="{$cdmCollectionId}">            
+    <xsl:template match="/">
+        <collection name="{$cdmCollectionId}">
             <xsl:variable name="text" select="unparsed-text($cdmFilePath,'UTF-8')"/>
             <xsl:variable name="header">
                 <xsl:analyze-string select="$text" regex="(..*)">
@@ -64,7 +89,7 @@
                     </xsl:matching-substring>
                 </xsl:analyze-string>
             </xsl:variable>
-
+            
             <!-- Create a variable to split the records between compound and single. -->
             <xsl:variable name="recordSort">
                 <xsl:for-each select="$recordBody/record">
@@ -95,7 +120,7 @@
                     </xsl:choose>
                 </xsl:for-each>
             </xsl:variable>
-
+            
             <!-- New variable to flesh out the structure in a second pass. -->
             <xsl:variable name="recordSort2">
                 <xsl:for-each select="$recordSort">
@@ -107,7 +132,7 @@
                                 <objectRecord>
                                     <xsl:sequence select="child::node()"/>
                                 </objectRecord>
-                                <xsl:for-each select="key('objectKey',@id)">                                    
+                                <xsl:for-each select="key('objectKey',@id)">
                                     <pageRecord>
                                         <xsl:sequence select="child::node()"/>
                                     </pageRecord>
@@ -125,7 +150,7 @@
                     </xsl:if>
                 </xsl:for-each>
             </xsl:variable>
-
+            
             <!-- Final variable to re-sort the records in order by object ID/digital ID. -->
             <xsl:for-each select="$recordSort2/compoundObject|$recordSort2/singleItem">
                 <xsl:sort select="descendant-or-self::identifier[1]" order="ascending"
@@ -135,7 +160,7 @@
                     order="ascending" data-type="number"/>
                 <xsl:sequence select="."/>
             </xsl:for-each>
-
+            
         </collection>
     </xsl:template>
 </xsl:stylesheet>
